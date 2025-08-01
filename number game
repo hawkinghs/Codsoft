@@ -1,0 +1,140 @@
+import java.util.*;
+
+public class NumberGuessingGame {
+    private static final int LOWER_BOUND = 1;
+    private static final int UPPER_BOUND = 100;
+    private static final Scanner scanner = new Scanner(System.in);
+    private static final Random random = new Random();
+
+    private int maxAttempts;
+    private int roundsPlayed = 0;
+    private int roundsWon = 0;
+    private int totalPoints = 0;
+    private int currentStreak = 0;
+    private List<Integer> leaderboard = new ArrayList<>();
+
+    public static void main(String[] args) {
+        NumberGuessingGame game = new NumberGuessingGame();
+        game.startGame();
+    }
+
+    private void startGame() {
+        System.out.println("Welcome to the Enhanced Number Guessing Game!");
+        boolean playAgain;
+
+        do {
+            chooseDifficulty();
+            roundsPlayed++;
+            int points = playRound();
+            if (points > 0) {
+                roundsWon++;
+                currentStreak++;
+                int bonus = currentStreak > 1 ? currentStreak * 2 : 0; // streak bonus
+                points += bonus;
+                System.out.println("Streak bonus: " + bonus + " points!");
+                System.out.println("You earned " + points + " points this round.");
+                totalPoints += points;
+                leaderboard.add(points);
+            } else {
+                System.out.println("No points earned this round.");
+                currentStreak = 0;
+            }
+
+            showLeaderboard();
+
+            System.out.print("Play another round? (yes/no): ");
+            playAgain = scanner.next().trim().equalsIgnoreCase("yes");
+        } while (playAgain);
+
+        System.out.println("\nGame over!");
+        System.out.println("Rounds played: " + roundsPlayed);
+        System.out.println("Rounds won: " + roundsWon);
+        System.out.println("Total points earned: " + totalPoints);
+        System.out.println("Thanks for playing!");
+    }
+
+    private void chooseDifficulty() {
+        System.out.println("\nSelect difficulty level:");
+        System.out.println("1. Easy (15 attempts)");
+        System.out.println("2. Medium (10 attempts)");
+        System.out.println("3. Hard (5 attempts)");
+        System.out.print("Enter choice (1-3): ");
+        int choice = getIntInput(1, 3);
+        switch (choice) {
+            case 1: maxAttempts = 15; break;
+            case 2: maxAttempts = 10; break;
+            case 3: maxAttempts = 5; break;
+        }
+        System.out.println("You have " + maxAttempts + " attempts to guess the number.");
+    }
+
+    private int playRound() {
+        int numberToGuess = random.nextInt(UPPER_BOUND - LOWER_BOUND + 1) + LOWER_BOUND;
+        int attemptsUsed = 0;
+        boolean guessedCorrectly = false;
+
+        while (attemptsUsed < maxAttempts) {
+            attemptsUsed++;
+            System.out.print("Attempt " + attemptsUsed + ": Enter your guess (" + LOWER_BOUND + "-" + UPPER_BOUND + "): ");
+            int guess = getIntInput(LOWER_BOUND, UPPER_BOUND);
+
+            if (guess == numberToGuess) {
+                guessedCorrectly = true;
+                break;
+            } else if (guess > numberToGuess) {
+                System.out.println("Too high!");
+            } else {
+                System.out.println("Too low!");
+            }
+
+            // Give hints after half attempts used
+            if (attemptsUsed == maxAttempts / 2) {
+                giveHint(numberToGuess);
+            }
+        }
+
+        if (guessedCorrectly) {
+            int points = calculatePoints(attemptsUsed);
+            System.out.println("Correct! The number was " + numberToGuess + ".");
+            return points;
+        } else {
+            System.out.println("You've run out of attempts! The number was " + numberToGuess + ".");
+            return 0;
+        }
+    }
+
+    private void giveHint(int number) {
+        System.out.println("Hint: The number is " + (number % 2 == 0 ? "even." : "odd."));
+        if (number % 3 == 0) System.out.println("Hint: The number is divisible by 3.");
+        else if (number % 5 == 0) System.out.println("Hint: The number is divisible by 5.");
+    }
+
+    private int calculatePoints(int attemptsUsed) {
+        return (maxAttempts - attemptsUsed + 1) * 10;
+    }
+
+    private int getIntInput(int min, int max) {
+        while (true) {
+            String input = scanner.next().trim();
+            try {
+                int num = Integer.parseInt(input);
+                if (num >= min && num <= max) {
+                    return num;
+                } else {
+                    System.out.print("Please enter a number between " + min + " and " + max + ": ");
+                }
+            } catch (NumberFormatException e) {
+                System.out.print("Invalid input. Enter a number between " + min + " and " + max + ": ");
+            }
+        }
+    }
+
+    private void showLeaderboard() {
+        leaderboard.sort(Collections.reverseOrder());
+        System.out.println("\nLeaderboard (Top Scores):");
+        for (int i = 0; i < Math.min(5, leaderboard.size()); i++) {
+            System.out.println((i + 1) + ". " + leaderboard.get(i) + " points");
+        }
+        System.out.println();
+    }
+}
