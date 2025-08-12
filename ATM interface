@@ -1,1 +1,118 @@
+import java.util.Scanner;
 
+class ATM {
+    private double balance;
+    private int pin;
+
+    public ATM(double initialBalance, int pin) {
+        this.balance = initialBalance;
+        this.pin = pin;
+    }
+
+    public boolean authenticate(int enteredPin) {
+        return this.pin == enteredPin;
+    }
+
+    public void setPin(int newPin) {
+        this.pin = newPin;
+        System.out.println("PIN changed successfully!");
+    }
+
+    public void checkBalance() {
+        System.out.println("Your current balance is: ₹" + balance);
+    }
+
+    public void deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
+            System.out.println("Deposited ₹" + amount + " successfully.");
+            checkBalance();
+        } else {
+            System.out.println("Invalid deposit amount.");
+        }
+    }
+
+    public void withdraw(double amount) {
+        if (amount <= 0) {
+            System.out.println("Invalid withdrawal amount.");
+        } else if (amount > balance) {
+            System.out.println("Insufficient balance!");
+        } else {
+            balance -= amount;
+            System.out.println("Withdrew ₹" + amount + " successfully.");
+            checkBalance();
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ATM atm = new ATM(10000.0, 1234); // Initial balance ₹10,000, PIN: 1234
+
+        // PIN authentication
+        int attempts = 3;
+        boolean authenticated = false;
+        while (attempts > 0) {
+            System.out.print("Enter your PIN: ");
+            int enteredPin = sc.nextInt();
+            if (atm.authenticate(enteredPin)) {
+                authenticated = true;
+                break;
+            } else {
+                attempts--;
+                System.out.println("Incorrect PIN. Attempts left: " + attempts);
+            }
+        }
+
+        if (!authenticated) {
+            System.out.println("Too many incorrect attempts. Access Denied.");
+            return;
+        }
+
+        // ATM menu
+        int choice;
+        do {
+            System.out.println("\n--- ATM Menu ---");
+            System.out.println("1. Check Balance");
+            System.out.println("2. Deposit Money");
+            System.out.println("3. Withdraw Money");
+            System.out.println("4. Change PIN");
+            System.out.println("5. Exit");
+            System.out.print("Enter choice: ");
+            while (!sc.hasNextInt()) {
+                System.out.print("Please enter a valid number: ");
+                sc.next();
+            }
+            choice = sc.nextInt();
+
+            switch (choice) {
+                case 1:
+                    atm.checkBalance();
+                    break;
+                case 2:
+                    System.out.print("Enter deposit amount: ₹");
+                    double depositAmount = sc.nextDouble();
+                    atm.deposit(depositAmount);
+                    break;
+                case 3:
+                    System.out.print("Enter withdrawal amount: ₹");
+                    double withdrawAmount = sc.nextDouble();
+                    atm.withdraw(withdrawAmount);
+                    break;
+                case 4:
+                    System.out.print("Enter new PIN: ");
+                    int newPin = sc.nextInt();
+                    atm.setPin(newPin);
+                    break;
+                case 5:
+                    System.out.println("Thank you for using our ATM.");
+                    break;
+                default:
+                    System.out.println("Invalid choice, please try again.");
+            }
+        } while (choice != 5);
+
+        sc.close();
+    }
+}
